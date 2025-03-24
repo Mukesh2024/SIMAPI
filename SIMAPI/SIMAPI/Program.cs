@@ -1,4 +1,12 @@
+using SIMAPI.Model;
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Services.Configure<ChatGPTSetting>(builder.Configuration.GetSection("ChatGPTSetting"));
+
 
 // Add services to the container.
 

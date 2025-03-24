@@ -1,0 +1,58 @@
+[
+  {
+    "Math": [
+      "Algebra",
+      "Geometry",
+      "Calculus",
+      "Trigonometry",
+      "Statistics",
+      "Probability",
+      "Linear Algebra",
+      "Differential Equations",
+      "Number Theory",
+      "Mathematical Logic"
+    ],
+    "Chemistry": [
+      "Atomic Structure",
+      "Chemical Bonding",
+      "Stoichiometry",
+      "Thermodynamics",
+      "Kinetics",
+      "Organic Chemistry",
+      "Inorganic Chemistry",
+      "Equilibria",
+      "Acids and Bases",
+      "Redox Reactions",
+      "Periodic Table",
+      "Electrochemistry"
+    ],
+    "Physics": [
+      "Classical Mechanics",
+      "Thermodynamics",
+      "Electromagnetism",
+      "Quantum Mechanics",
+      "Relativity",
+      "Optics",
+      "Acoustics",
+      "Fluid Mechanics",
+      "Nuclear Physics",
+      "Particle Physics",
+      "Waves and Oscillations",
+      "Solid State Physics"
+    ],
+    "Biology": [
+      "Cell Biology",
+      "Genetics",
+      "Evolution",
+      "Ecology",
+      "Human Anatomy and Physiology",
+      "Botany",
+      "Zoology",
+      "Microbiology",
+      "Biotechnology",
+      "Biochemistry",
+      "Molecular Biology",
+      "Immunology"
+    ]
+  }
+]
