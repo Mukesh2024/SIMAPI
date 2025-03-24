@@ -33,15 +33,15 @@ namespace SIMAPI.Controllers
         //    .ToArray();
         //}
 
-        [HttpGet(Name = "GetChatGPTHelper")]
-        public async Task<object> GetChatGPTHelper()
-        {
-            var helper = new ChatGPTHelper();
+        //[HttpGet(Name = "GetChatGPTHelper")]
+        //public async Task<object> GetChatGPTHelper()
+        //{
+        //    var helper = new ChatGPTHelper();
 
-            var data  = await helper.SendRequest();
+        //    var data  = await helper.SendRequest();
 
-            return data;
+        //    return data;
 
-        }
+        //}
     }
 }

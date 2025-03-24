@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 namespace SIMAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly string _jsonFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Database");
