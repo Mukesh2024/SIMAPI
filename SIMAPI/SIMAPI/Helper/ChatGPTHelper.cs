@@ -52,7 +52,8 @@ namespace SIMAPI.Helper
                 {
                     // Parse the JSON response
                     dynamic jsonResponse = JsonConvert.DeserializeObject(responseString);
-                    return jsonResponse.choices[0].text.ToString().Trim();
+                    //return jsonResponse.choices[0].text.ToString().Trim();
+                    return jsonResponse;
                 }
                 else
                 {
