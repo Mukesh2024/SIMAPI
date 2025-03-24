@@ -20,10 +20,10 @@ namespace SIMAPI.Model
         public Options Options { get; set; }
 
         [JsonProperty("answer")]
-        public string Answer { get; set; }
+        public string? Answer { get; set; }
 
         [JsonProperty("explanation")]
-        public string Explanation { get; set; }
+        public string? Explanation { get; set; }
     }
 
     public class Content

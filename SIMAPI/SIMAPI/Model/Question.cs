@@ -5,7 +5,7 @@ namespace SIMAPI.Model
     public class Question
     {
         public string ChallengeName { get; set; }
-        public Topics Topics { get; set; }
+        public List<Topics> Topics { get; set; }
         public DifficultyLevel DifficultyLevel { get; set; }
         public int NumberOfQuestion { get; set; }
         public int TotalMarksOfEachAnswer { get; set; }
@@ -18,6 +18,6 @@ namespace SIMAPI.Model
     public class Topics
     {
         public string Subject { get; set; }
-        public string Topic { get; set; }
+        public string[] Topic { get; set; }
     }
 }

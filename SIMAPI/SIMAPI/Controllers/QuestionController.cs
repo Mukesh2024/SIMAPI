@@ -23,29 +23,35 @@ namespace SIMAPI.Controllers
         [HttpPost(Name = "GenerateQuestion")]
         public async Task<List<QuestionCollection>> GenerateQuestion(Question model)
         {
-            var setting = new ChatGPTHelper();
+            var chatGPTHelper = new ChatGPTHelper();
 
-            var userString = await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "chatgptresponse.json"));
-            var response = JsonConvert.DeserializeObject<ChatGPTResponse>(userString);
+            var chatGPTResponse = await chatGPTHelper.GenerateQuestion(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
 
-            var questionCollectionString = response.Choices.Select(s => s.Message.Content).FirstOrDefault();
+            var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
 
-            if (questionCollectionString.StartsWith("```json") && questionCollectionString.EndsWith("```"))
+            //var userString = await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "chatgptresponsemultiresp.json"));
+            //var response = JsonConvert.DeserializeObject<ChatGPTResponse>(userString);
+
+            //var questionCollection = response.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+            if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
             {
                 // Remove the ```json at the beginning and the closing ``` at the end
-                questionCollectionString = questionCollectionString.Substring(7); // Remove "```json"
-                questionCollectionString = questionCollectionString.Substring(0, questionCollectionString.LastIndexOf("```")); // Remove closing "```"
+                questionCollection = questionCollection.Substring(7); // Remove "```json"
+                questionCollection = questionCollection.Substring(0, questionCollection.LastIndexOf("```")); // Remove closing "```"
             }
 
-            if (questionCollectionString != null)
+            if (questionCollection != null)
             {
-                var questionCollectionObject = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollectionString);
+                var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
 
-                //var questions = questionCollectionObject.Select(q => new QuestionCollection
-            
-                return questionCollectionObject;
+                questionCollections.ForEach(f =>
+                {
+                    f.Answer = null;
+                    f.Explanation = null;
+                });
+                return questionCollections;
             }
-
 
             return new List<QuestionCollection>();
         }
