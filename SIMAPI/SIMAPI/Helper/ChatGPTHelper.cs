@@ -42,9 +42,9 @@ namespace SIMAPI.Helper
             var systemContent = "You are an expert educational AI that generates structured multiple-choice quiz questions for high school and competitive exam students.";
             string topics = string.Empty;
             
-            if (model.Topics.Count > 0)
+            if (model.SubjectAndTopics.Count > 0)
             {
-                foreach (var topic in model.Topics)
+                foreach (var topic in model.SubjectAndTopics)
                 {
                     if (topics != string.Empty)
                     {

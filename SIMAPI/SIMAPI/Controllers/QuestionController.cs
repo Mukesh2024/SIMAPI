@@ -144,14 +144,62 @@ namespace SIMAPI.Controllers
 
                     request.UserAnswer = model.Answers;
                     request.TotalCorrect = totalCorrect;
-                    request.TotalInCorrect= totalInCorrect;
-                    request.TotalNotAttempt= totalNotAttempt;
+                    request.TotalInCorrect = totalInCorrect;
+                    request.TotalNotAttempt = totalNotAttempt;
+
+                    var percentile = (totalCorrect / (double)questionCollections.Count) * 100;
+
+                    if (percentile >= 90)
+                    {
+                        request.Grade = "A+";
+                    }
+                    else if (percentile >= 80)
+                    {
+                        request.Grade = "A";
+                    }
+                    else if (percentile >= 70)
+                    {
+                        request.Grade = "B+";
+                    }
+                    else if (percentile >= 60)
+                    {
+                        request.Grade = "B";
+                    }
+                    else
+                    {
+                        request.Grade = "C";
+                    }
+
+                    request.Status = "Completed";
+                    request.CompletedOn = DateTime.Now;
 
                     var deserlize = JsonConvert.SerializeObject(data);
 
                     await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
                 }
             }
+        }
+
+        [HttpGet(Name ="MyChallanges")]
+        public async Task<List<MyChallenges>> MyChallanges()
+        {
+            var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+            var challanged =  new List<MyChallenges>(); 
+
+            data.Request.ForEach(f =>
+            {
+                var myChallenges = new MyChallenges();
+                myChallenges.Guid = f.Guid;
+                myChallenges.Name = f.UserRequest.ChallengeName;
+                myChallenges.CompltedOn = f.CompletedOn;
+                myChallenges.Grade = f.Grade;
+                myChallenges.SubjectAndTopics = f.UserRequest.SubjectAndTopics;
+                challanged.Add(myChallenges);
+            });
+
+            return challanged;
+
         }
     }
 }
