@@ -143,7 +143,7 @@ namespace SIMAPI.Controllers
                                 totalInCorrect++;
                             }
 
-                            f.Explanation = question.Explanation;
+                            f.Hint = question.Explanation;
                         }
                         else
                         {
@@ -205,6 +205,9 @@ namespace SIMAPI.Controllers
                 myChallenges.CompltedOn = f.CompletedOn;
                 myChallenges.Grade = f.Grade;
                 myChallenges.SubjectAndTopics = f.UserRequest.SubjectAndTopics;
+                myChallenges.TotalCorrect = f.TotalCorrect;
+                myChallenges.TotalInCorrect = f.TotalInCorrect;
+                myChallenges.TotalNotAttempt = f.TotalNotAttempt;
                 challanged.Add(myChallenges);
             });
 
@@ -217,5 +220,44 @@ namespace SIMAPI.Controllers
         {
             return JsonConvert.DeserializeObject<List<SubjectAndTopics>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "Subject.json")));
         }
+
+        
+        [HttpGet(Name = "GetQuestionWithAnswer")]
+        public async Task<List<UserAnswer>> GetQuestionWithAnswer(Guid model)
+        {
+            if(model != Guid.Empty)
+            {
+                var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+                var userQuestionAndAnswer = data.Request.FirstOrDefault(f => f.Guid == model);
+
+                return userQuestionAndAnswer != null ? userQuestionAndAnswer.UserAnswer : new List<UserAnswer>();
+            }
+            else
+            {
+                return new List<UserAnswer>();
+
+            }
+
+        }
+
+        //[HttpGet(Name = "RecommendationOnQuestion")]
+        //public async Task<List<UserAnswer>> GetQuestionWithAnswer(Guid model)
+        //{
+        //    if (model != Guid.Empty)
+        //    {
+        //        var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+        //        var userQuestionAndAnswer = data.Request.FirstOrDefault(f => f.Guid == model);
+
+        //        return userQuestionAndAnswer != null ? userQuestionAndAnswer.UserAnswer : new List<UserAnswer>();
+        //    }
+        //    else
+        //    {
+        //        return new List<UserAnswer>();
+
+        //    }
+
+        //}
     }
 }
