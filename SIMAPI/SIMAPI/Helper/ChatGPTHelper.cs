@@ -7,7 +7,7 @@ namespace SIMAPI.Helper
 {
     public class ChatGPTHelper
     {
-        public async Task<ChatGPTResponse> GenerateQuestion(Question model, string apiKey, string url, string chatGPTModel)
+        public async Task<ChatGPTResponse> GenerateQuestion(GenerateQuestionRequest model, string apiKey, string url, string chatGPTModel)
         {
             using (var client = new HttpClient())
             {
@@ -37,7 +37,7 @@ namespace SIMAPI.Helper
         }
 
 
-        private string GenerateRquest(Question model, string chatGPTModel)
+        private string GenerateRquest(GenerateQuestionRequest model, string chatGPTModel)
         {
             var systemContent = "You are an expert educational AI that generates structured multiple-choice quiz questions for high school and competitive exam students.";
             string topics = string.Empty;

@@ -21,8 +21,10 @@ namespace SIMAPI.Controllers
         }
 
         [HttpPost(Name = "GenerateQuestion")]
-        public async Task<List<QuestionCollection>> GenerateQuestion(Question model)
+        public async Task<GenerateQuestionResponse> GenerateQuestion(GenerateQuestionRequest model)
         {
+            var generateQuestionResponse = new GenerateQuestionResponse();
+
             if (ModelState.IsValid)
             {
                 var schema = new Schema();
@@ -54,10 +56,11 @@ namespace SIMAPI.Controllers
 
                 var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
 
-                //var userString = await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "chatgptresponsemultiresp.json"));
-                //var response = JsonConvert.DeserializeObject<ChatGPTResponse>(userString);
+                //var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
-                //var questionCollection = response.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                //generateQuestionResponse.Guid = data.Request.FirstOrDefault().Guid;
+
+                //var questionCollection = data.Request.FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
 
                 if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
                 {
@@ -70,17 +73,85 @@ namespace SIMAPI.Controllers
                 {
                     var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
 
+                    generateQuestionResponse.QuestionCollections = questionCollections;
                     questionCollections.ForEach(f =>
                     {
                         f.Answer = null;
                         f.Explanation = null;
                     });
-                    return questionCollections;
+
+                    return generateQuestionResponse;
                 }
 
             }
 
-            return new List<QuestionCollection>();
+            return generateQuestionResponse;
+        }
+
+
+        [HttpPost(Name = "SaveUserAnswer")]
+        public async Task SaveUserAnswer(UserResponse model)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+                if (data.Request != null)
+                {
+                    var request = data.Request.Where(w => w.Guid == model.Guid).FirstOrDefault();
+
+                    var questionAnswer = request.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+
+                    if (questionAnswer.StartsWith("```json") && questionAnswer.EndsWith("```"))
+                    {
+                        // Remove the ```json at the beginning and the closing ``` at the end
+                        questionAnswer = questionAnswer.Substring(7); // Remove "```json"
+                        questionAnswer = questionAnswer.Substring(0, questionAnswer.LastIndexOf("```")); // Remove closing "```"
+                    }
+
+                    var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionAnswer);
+
+                    var totalCorrect = 0;
+                    var totalInCorrect = 0;
+                    var totalNotAttempt = 0;
+
+                    model.Answers.ForEach(f =>
+                    {
+                        var question = questionCollections.FirstOrDefault(w => w.QuestionText.Trim() == f.Question);
+
+                        if (question != null && (f.Answer != null && f.Answer != ""))
+                        {
+                            if (question.Answer == f.Answer)
+                            {
+                                f.IsCorrect = true;
+                                totalCorrect++;
+                            }
+                            else
+                            {
+                                f.IsCorrect = false;
+                                totalInCorrect++;
+                            }
+
+                            f.Explanation = question.Explanation;
+                        }
+                        else
+                        {
+                            f.IsCorrect = false;
+                            totalNotAttempt++;
+                        }
+                    });
+
+                    request.UserAnswer = model.Answers;
+                    request.TotalCorrect = totalCorrect;
+                    request.TotalInCorrect= totalInCorrect;
+                    request.TotalNotAttempt= totalNotAttempt;
+
+                    var deserlize = JsonConvert.SerializeObject(data);
+
+                    await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
+                }
+            }
         }
     }
 }

@@ -52,6 +52,5 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-/.vs/SIMRepo/v17/.wsuo
 /.vs/SIMRepo/v17
 /SIMAPI/.vs/SIMAPI
