@@ -26,8 +26,8 @@ public class DashboardController : ControllerBase
     {
         var expertiseTopics = new List<object>
         {
-            new { Title = "Quadratic Equations", Subject = "Mathematics", Question = "Solve x² - 4x + 4 = 0", Accuracy = 85 },
-            new { Title = "Momentum", Subject = "Physics", Question = "Calculate momentum of a 2kg object moving at 3m/s", Accuracy = 90 }
+            new { Title = "Quadratic Equations", Subject = "Mathematics", Question = "Solve x² - 4x + 4 = 0", Accuracy = 85, TotalQuestions = 12 },
+            new { Title = "Momentum", Subject = "Physics", Question = "Calculate momentum of a 2kg object moving at 3m/s", Accuracy = 90, TotalQuestions = 9}
         };
 
         return Ok(new { expertiseTopics });
