@@ -27,40 +27,40 @@ namespace SIMAPI.Controllers
 
             if (ModelState.IsValid)
             {
-                //var schema = new Schema();
-                //schema.Request = new List<Request>();
+                var schema = new Schema();
+                schema.Request = new List<Request>();
 
-                //var chatGPTHelper = new ChatGPTHelper();
+                var chatGPTHelper = new ChatGPTHelper();
 
-                //var chatGPTResponse = await chatGPTHelper.GenerateQuestion(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
-
-                //var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
-
-                //if (data.Request == null)
-                //{
-                //    data.Request = new List<Request>();
-                //}
-
-                //data.Request.Add(new Request
-                //{
-                //    Guid = Guid.NewGuid(),
-                //    UserRequest = model,
-                //    ChatGPTResponse = chatGPTResponse,
-                //    UserAnswer = null,
-                //    Status = "Pending"
-                //});
-
-                //var deserlize = JsonConvert.SerializeObject(data);
-
-                //await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
-
-                //var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                var chatGPTResponse = await chatGPTHelper.GenerateQuestion(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
 
                 var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
-                generateQuestionResponse.Guid = data.Request.FirstOrDefault().Guid;
+                if (data.Request == null)
+                {
+                    data.Request = new List<Request>();
+                }
 
-                var questionCollection = data.Request.FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                data.Request.Add(new Request
+                {
+                    Guid = Guid.NewGuid(),
+                    UserRequest = model,
+                    ChatGPTResponse = chatGPTResponse,
+                    UserAnswer = null,
+                    Status = "Pending"
+                });
+
+                var deserlize = JsonConvert.SerializeObject(data);
+
+                await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
+
+                var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                //var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+                //generateQuestionResponse.Guid = data.Request.FirstOrDefault().Guid;
+
+                //var questionCollection = data.Request.FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
 
                 if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
                 {
@@ -73,12 +73,12 @@ namespace SIMAPI.Controllers
                 {
                     var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
 
-                    generateQuestionResponse.QuestionCollections = questionCollections; 
-                    //questionCollections.ForEach(f =>
-                    //{
-                    //    f.Answer = null;
-                    //    f.Explanation = null;
-                    //});
+                    generateQuestionResponse.QuestionCollections = questionCollections;
+                    questionCollections.ForEach(f =>
+                    {
+                        f.Answer = null;
+                        f.Explanation = null;
+                    });
 
                     return generateQuestionResponse;
                 }
