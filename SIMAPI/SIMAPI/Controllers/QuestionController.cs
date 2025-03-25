@@ -7,7 +7,7 @@ using SIMAPI.Model;
 
 namespace SIMAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class QuestionController : ControllerBase
     {
@@ -23,34 +23,61 @@ namespace SIMAPI.Controllers
         [HttpPost(Name = "GenerateQuestion")]
         public async Task<List<QuestionCollection>> GenerateQuestion(Question model)
         {
-            var chatGPTHelper = new ChatGPTHelper();
-
-            var chatGPTResponse = await chatGPTHelper.GenerateQuestion(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
-
-            var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
-
-            //var userString = await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "chatgptresponsemultiresp.json"));
-            //var response = JsonConvert.DeserializeObject<ChatGPTResponse>(userString);
-
-            //var questionCollection = response.Choices.Select(s => s.Message.Content).FirstOrDefault();
-
-            if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
+            if (ModelState.IsValid)
             {
-                // Remove the ```json at the beginning and the closing ``` at the end
-                questionCollection = questionCollection.Substring(7); // Remove "```json"
-                questionCollection = questionCollection.Substring(0, questionCollection.LastIndexOf("```")); // Remove closing "```"
-            }
+                var schema = new Schema();
+                schema.Request = new List<Request>();
 
-            if (questionCollection != null)
-            {
-                var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
+                var chatGPTHelper = new ChatGPTHelper();
 
-                questionCollections.ForEach(f =>
+                var chatGPTResponse = await chatGPTHelper.GenerateQuestion(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
+
+                var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+                if (data.Request == null)
                 {
-                    f.Answer = null;
-                    f.Explanation = null;
+                    data.Request = new List<Request>();
+                }
+
+                data.Request.Add(new Request
+                {
+                    Guid = Guid.NewGuid(),
+                    UserRequest = model,
+                    ChatGPTResponse = chatGPTResponse,
+                    UserAnswer = null,
+                    Status = "Pending"
                 });
-                return questionCollections;
+
+                var deserlize = JsonConvert.SerializeObject(data);
+
+                await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
+
+                var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                //var userString = await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "chatgptresponsemultiresp.json"));
+                //var response = JsonConvert.DeserializeObject<ChatGPTResponse>(userString);
+
+                //var questionCollection = response.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
+                {
+                    // Remove the ```json at the beginning and the closing ``` at the end
+                    questionCollection = questionCollection.Substring(7); // Remove "```json"
+                    questionCollection = questionCollection.Substring(0, questionCollection.LastIndexOf("```")); // Remove closing "```"
+                }
+
+                if (questionCollection != null)
+                {
+                    var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
+
+                    questionCollections.ForEach(f =>
+                    {
+                        f.Answer = null;
+                        f.Explanation = null;
+                    });
+                    return questionCollections;
+                }
+
             }
 
             return new List<QuestionCollection>();
