@@ -12,6 +12,7 @@ namespace SIMAPI.Model
         public int TotalMarksOfEachCorrectAnswer { get; set; }
         public int TotalMarksDeductforEachWrongAnswer { get; set; }
         public int TotalTimeInMin { get; set; }
+        public string Grade { get; set; }
         public bool AllowAIGuidence { get; set; }
     }
 

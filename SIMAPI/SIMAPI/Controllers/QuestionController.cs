@@ -21,7 +21,7 @@ namespace SIMAPI.Controllers
         }
 
         [HttpPost(Name = "GenerateQuestion")]
-        public async Task<GenerateQuestionResponse> GenerateQuestion(GenerateQuestionRequest model)
+        public async Task<Guid> GenerateQuestion(GenerateQuestionRequest model)
         {
             var generateQuestionResponse = new GenerateQuestionResponse();
 
@@ -41,9 +41,11 @@ namespace SIMAPI.Controllers
                     data.Request = new List<Request>();
                 }
 
+                generateQuestionResponse.Guid = Guid.NewGuid();
+
                 data.Request.Add(new Request
                 {
-                    Guid = Guid.NewGuid(),
+                    Guid = generateQuestionResponse.Guid,
                     UserRequest = model,
                     ChatGPTResponse = chatGPTResponse,
                     UserAnswer = null,
@@ -77,17 +79,53 @@ namespace SIMAPI.Controllers
                     questionCollections.ForEach(f =>
                     {
                         f.Answer = null;
-                        f.Explanation = null;
                     });
 
-                    return generateQuestionResponse;
+                    return generateQuestionResponse.Guid;
                 }
 
             }
 
-            return generateQuestionResponse;
+            return generateQuestionResponse.Guid;
         }
 
+        [HttpPost(Name = "GetQuestion")]
+        public async Task<List<QuestionCollection>> GetQuestion(Guid model)
+        {
+            var generateQuestionResponse = new GenerateQuestionResponse();
+
+            if (ModelState.IsValid)
+            {
+
+                var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+                if (data.Request != null)
+                {
+                    var questionCollection = data.Request.Where(w => w.Guid == model).FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                    if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
+                    {
+                        // Remove the ```json at the beginning and the closing ``` at the end
+                        questionCollection = questionCollection.Substring(7); // Remove "```json"
+                        questionCollection = questionCollection.Substring(0, questionCollection.LastIndexOf("```")); // Remove closing "```"
+                    }
+
+                    if (questionCollection != null)
+                    {
+                        var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
+
+                        questionCollections.ForEach(f =>
+                        {
+                            f.Answer = null;
+                        });
+
+                        return questionCollections;
+                    }
+                }
+            }
+
+            return new List<QuestionCollection>();
+        }
 
         [HttpPost(Name = "SaveUserAnswer")]
         public async Task SaveUserAnswer(UserResponse model)
@@ -180,12 +218,12 @@ namespace SIMAPI.Controllers
             }
         }
 
-        [HttpGet(Name ="MyChallanges")]
+        [HttpGet(Name = "MyChallanges")]
         public async Task<List<MyChallenges>> MyChallanges()
         {
             var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
-            var challanged =  new List<MyChallenges>(); 
+            var challanged = new List<MyChallenges>();
 
             data.Request.ForEach(f =>
             {
@@ -200,6 +238,12 @@ namespace SIMAPI.Controllers
 
             return challanged;
 
+        }
+
+        [HttpGet(Name = "SubjectAndTopics")]
+        public async Task<List<SubjectAndTopics>> SubjectAndTopics()
+        {
+            return JsonConvert.DeserializeObject<List<SubjectAndTopics>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "Subject.json")));
         }
     }
 }
