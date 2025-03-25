@@ -59,7 +59,7 @@ namespace SIMAPI.Helper
             }
 
 
-            var userContent = $"Generate 10 {model.DifficultyLevel.GetDisplayName()} multiple-choice question on {topics}.\n" +
+            var userContent = $"Generate {model.NumberOfQuestion} {model.DifficultyLevel.GetDisplayName()} multiple-choice question on {topics}.\n" +
                       "Each question should include:\n" +
                       "1. Question statement\n" +
                       "2. Four options (A to D)\n" +
