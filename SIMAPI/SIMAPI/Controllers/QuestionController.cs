@@ -144,8 +144,34 @@ namespace SIMAPI.Controllers
 
                     request.UserAnswer = model.Answers;
                     request.TotalCorrect = totalCorrect;
-                    request.TotalInCorrect= totalInCorrect;
-                    request.TotalNotAttempt= totalNotAttempt;
+                    request.TotalInCorrect = totalInCorrect;
+                    request.TotalNotAttempt = totalNotAttempt;
+
+                    var percentile = (totalCorrect / (double)questionCollections.Count) * 100;
+
+                    if (percentile >= 90)
+                    {
+                        request.Grade = "A+";
+                    }
+                    else if (percentile >= 80)
+                    {
+                        request.Grade = "A";
+                    }
+                    else if (percentile >= 70)
+                    {
+                        request.Grade = "B+";
+                    }
+                    else if (percentile >= 60)
+                    {
+                        request.Grade = "B";
+                    }
+                    else
+                    {
+                        request.Grade = "C";
+                    }
+
+                    request.Status = "Completed";
+                    request.CompletedOn = DateTime.Now;
 
                     var deserlize = JsonConvert.SerializeObject(data);
 

@@ -14,7 +14,9 @@
         public int TotalCorrect { get; set; }
         public int TotalInCorrect { get; set; }
         public int TotalNotAttempt { get; set; }
+        public string  Grade { get; set; }
         public string  Status { get; set; }
+        public DateTime  CompletedOn { get; set; }
     }
 
 }
