@@ -179,5 +179,27 @@ namespace SIMAPI.Controllers
                 }
             }
         }
+
+        [HttpGet(Name ="MyChallanges")]
+        public async Task<List<MyChallenges>> MyChallanges()
+        {
+            var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+
+            var challanged =  new List<MyChallenges>(); 
+
+            data.Request.ForEach(f =>
+            {
+                var myChallenges = new MyChallenges();
+                myChallenges.Guid = f.Guid;
+                myChallenges.Name = f.UserRequest.ChallengeName;
+                myChallenges.CompltedOn = f.CompletedOn;
+                myChallenges.Grade = f.Grade;
+                myChallenges.SubjectAndTopics = f.UserRequest.SubjectAndTopics;
+                challanged.Add(myChallenges);
+            });
+
+            return challanged;
+
+        }
     }
 }

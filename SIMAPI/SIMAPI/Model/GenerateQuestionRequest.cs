@@ -5,7 +5,7 @@ namespace SIMAPI.Model
     public class GenerateQuestionRequest
     {
         public string ChallengeName { get; set; }
-        public List<Topics> Topics { get; set; }
+        public List<SubjectAndTopics> SubjectAndTopics { get; set; }
         public DifficultyLevel DifficultyLevel { get; set; }
         public int NumberOfQuestion { get; set; }
         public int TotalMarksOfEachAnswer { get; set; }
@@ -15,7 +15,7 @@ namespace SIMAPI.Model
         public bool AllowAIGuidence { get; set; }
     }
 
-    public class Topics
+    public class SubjectAndTopics  
     {
         public string Subject { get; set; }
         public string[] Topic { get; set; }
