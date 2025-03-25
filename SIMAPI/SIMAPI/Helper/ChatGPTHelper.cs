@@ -23,15 +23,12 @@ namespace SIMAPI.Helper
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonResponse = JsonConvert.DeserializeObject<ChatGPTResponse>(responseString);
-                    //return jsonResponse.choices[0].text.ToString().Trim();
                     return jsonResponse;
                 }
-                //else
-                //{
-                //    //return $"Error: {responseString}";
-                //}
-
-                return null;
+                else
+                {
+                    return new ChatGPTResponse();
+                }
 
             }
         }
@@ -41,7 +38,7 @@ namespace SIMAPI.Helper
         {
             var systemContent = "You are an expert educational AI that generates structured multiple-choice quiz questions for high school and competitive exam students.";
             string topics = string.Empty;
-            
+
             if (model.SubjectAndTopics.Count > 0)
             {
                 foreach (var topic in model.SubjectAndTopics)
@@ -49,7 +46,7 @@ namespace SIMAPI.Helper
                     if (topics != string.Empty)
                     {
                         topics = topics + " and ";
-                        topics = topics +  string.Join(", ", topic.Topic) + " in " + topic.Subject;
+                        topics = topics + string.Join(", ", topic.Topic) + " in " + topic.Subject;
                     }
                     else
                     {
@@ -59,12 +56,12 @@ namespace SIMAPI.Helper
             }
 
 
-            var userContent = $"Generate {model.NumberOfQuestion} {model.DifficultyLevel.GetDisplayName()} multiple-choice question on {topics}.\n" +
+            var userContent = $"Generate {model.NumberOfQuestion} {model.DifficultyLevel.GetDisplayName()} multiple-choice question on {topics} for grade {model.Grade}.\n" +
                       "Each question should include:\n" +
                       "1. Question statement\n" +
                       "2. Four options (A to D)\n" +
                       "3. Correct answer (as A/B/C/D)\n" +
-                      "4. Explanation (1-2 lines)\n\n" +
+                      (model.AllowAIGuidence ? "4. Explanation (1-2 lines)\n\n" : string.Empty) +
                       "Respond in JSON format like this:\n" +
                       "[\n" +
                       "  {\n" +
@@ -76,7 +73,7 @@ namespace SIMAPI.Helper
                       "      \\\"D\\\": \\\"-6\\\"\n" +
                       "    },\n" +
                       "    \\\"answer\\\": \\\"A\\\",\n" +
-                      "    \\\"explanation\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n" +
+                      (model.AllowAIGuidence? "    \\\"explanation\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n": string.Empty) +
                       "  }\n" +
                       "]";
 

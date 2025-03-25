@@ -1,6 +1,7 @@
 [
   {
-    "Math": [
+    "Subject": "Math",
+    "Topic": [
       "Algebra",
       "Geometry",
       "Calculus",
@@ -11,8 +12,11 @@
       "Differential Equations",
       "Number Theory",
       "Mathematical Logic"
-    ],
-    "Chemistry": [
+    ]
+  },
+  {
+    "Subject": "Chemistry",
+    "Topic": [
       "Atomic Structure",
       "Chemical Bonding",
       "Stoichiometry",
@@ -25,8 +29,11 @@
       "Redox Reactions",
       "Periodic Table",
       "Electrochemistry"
-    ],
-    "Physics": [
+    ]
+  },
+  {
+    "Subject": "Physics",
+    "Topic": [
       "Classical Mechanics",
       "Thermodynamics",
       "Electromagnetism",
@@ -39,8 +46,11 @@
       "Particle Physics",
       "Waves and Oscillations",
       "Solid State Physics"
-    ],
-    "Biology": [
+    ]
+  },
+  {
+    "Subject": "Biology",
+    "Topic": [
       "Cell Biology",
       "Genetics",
       "Evolution",
