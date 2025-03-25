@@ -23,11 +23,12 @@ namespace SIMAPI.Controllers
         [HttpPost(Name = "GenerateQuestion")]
         public async Task<Guid> GenerateQuestion(GenerateQuestionRequest model)
         {
-            var generateQuestionResponse = new GenerateQuestionResponse();
+            Guid guid = Guid.Empty;
 
             if (ModelState.IsValid)
             {
                 var schema = new Schema();
+
                 schema.Request = new List<Request>();
 
                 var chatGPTHelper = new ChatGPTHelper();
@@ -41,11 +42,11 @@ namespace SIMAPI.Controllers
                     data.Request = new List<Request>();
                 }
 
-                generateQuestionResponse.Guid = Guid.NewGuid();
+                guid = Guid.NewGuid();
 
                 data.Request.Add(new Request
                 {
-                    Guid = generateQuestionResponse.Guid,
+                    Guid = guid,
                     UserRequest = model,
                     ChatGPTResponse = chatGPTResponse,
                     UserAnswer = null,
@@ -55,38 +56,9 @@ namespace SIMAPI.Controllers
                 var deserlize = JsonConvert.SerializeObject(data);
 
                 await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
-
-                var questionCollection = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
-
-                //var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
-
-                //generateQuestionResponse.Guid = data.Request.FirstOrDefault().Guid;
-
-                //var questionCollection = data.Request.FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
-
-                if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
-                {
-                    // Remove the ```json at the beginning and the closing ``` at the end
-                    questionCollection = questionCollection.Substring(7); // Remove "```json"
-                    questionCollection = questionCollection.Substring(0, questionCollection.LastIndexOf("```")); // Remove closing "```"
-                }
-
-                if (questionCollection != null)
-                {
-                    var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
-
-                    generateQuestionResponse.QuestionCollections = questionCollections;
-                    questionCollections.ForEach(f =>
-                    {
-                        f.Answer = null;
-                    });
-
-                    return generateQuestionResponse.Guid;
-                }
-
             }
 
-            return generateQuestionResponse.Guid;
+            return guid;
         }
 
         [HttpPost(Name = "GetQuestion")]

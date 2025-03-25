@@ -61,7 +61,7 @@ namespace SIMAPI.Helper
                       "1. Question statement\n" +
                       "2. Four options (A to D)\n" +
                       "3. Correct answer (as A/B/C/D)\n" +
-                      (model.AllowAIGuidence ? "4. Explanation (1-2 lines)\n\n" : string.Empty) +
+                      (model.AllowAIGuidence ? "4. Hint (1 lines)\n\n" : string.Empty) +
                       "Respond in JSON format like this:\n" +
                       "[\n" +
                       "  {\n" +
@@ -73,7 +73,7 @@ namespace SIMAPI.Helper
                       "      \\\"D\\\": \\\"-6\\\"\n" +
                       "    },\n" +
                       "    \\\"answer\\\": \\\"A\\\",\n" +
-                      (model.AllowAIGuidence? "    \\\"explanation\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n": string.Empty) +
+                      (model.AllowAIGuidence? "    \\\"hint\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n": string.Empty) +
                       "  }\n" +
                       "]";
 
