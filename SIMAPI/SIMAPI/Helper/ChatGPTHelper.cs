@@ -10,11 +10,28 @@ namespace SIMAPI.Helper
     {
         public async Task<ChatGPTResponse> GenerateQuestion(GenerateQuestionRequest model, string apiKey, string url, string chatGPTModel)
         {
+            string jsonRequest = GenerateQuestionRquest(model, chatGPTModel);
+            return await SendRequestToChatGPT(jsonRequest, apiKey, url);
+        }
+
+        public async Task<ChatGPTResponse> GenerateAIRecommendation(RecommendationOnQuestion model, string apiKey, string url, string chatGPTModel)
+        {
+            string jsonRequest = GenerateAIRecommndationOnQuestionRequest(model, chatGPTModel);
+            return await SendRequestToChatGPT(jsonRequest, apiKey, url);
+        }
+
+        public async Task<ChatGPTResponse> GenerateAIRecommendationOnResult(UserResponse model, string apiKey, string url, string chatGPTModel)
+        {
+            string jsonRequest = GenerateAIRecommndationOnResultRequest(model, chatGPTModel);
+            return await SendRequestToChatGPT(jsonRequest, apiKey, url);
+        }
+
+        private async Task<ChatGPTResponse> SendRequestToChatGPT(string jsonRequest, string apiKey, string url)
+        {
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-                string jsonRequest = GenerateQuestionRquest(model, chatGPTModel);
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync(url, content);
@@ -30,7 +47,6 @@ namespace SIMAPI.Helper
                 {
                     return new ChatGPTResponse();
                 }
-
             }
         }
 
@@ -98,32 +114,7 @@ namespace SIMAPI.Helper
             var stringData = JsonConvert.SerializeObject(requesBody);
             return stringData;
         }
-
-        public async Task<ChatGPTResponse> GenerateAIRecommendation(RecommendationOnQuestion model, string apiKey, string url, string chatGPTModel)
-        {
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
-                string jsonRequest =  GenerateAIRecommndationOnQuestionRequest(model, chatGPTModel);
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync(url, content);
-
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = JsonConvert.DeserializeObject<ChatGPTResponse>(responseString);
-                    return jsonResponse;
-                }
-                else
-                {
-                    return new ChatGPTResponse();
-                }
-            }
-        }
-
+        
         private string GenerateAIRecommndationOnQuestionRequest(RecommendationOnQuestion model, string chatGPTModel)
         {
             StringBuilder sb = new StringBuilder();
@@ -158,32 +149,7 @@ namespace SIMAPI.Helper
             return stringData;
         }
 
-        public async Task<ChatGPTResponse> GenerateAIRecommendationOnResult(UserResponse model, string apiKey, string url, string chatGPTModel)
-        {
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
-                string jsonRequest = GenerateAIRecommndationOnResult(model, chatGPTModel);
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync(url, content);
-
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = JsonConvert.DeserializeObject<ChatGPTResponse>(responseString);
-                    return jsonResponse;
-                }
-                else
-                {
-                    return new ChatGPTResponse();
-                }
-            }
-        }
-
-        private string GenerateAIRecommndationOnResult(UserResponse model, string chatGPTModel)
+        private string GenerateAIRecommndationOnResultRequest(UserResponse model, string chatGPTModel)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append($"Below are the detail of student {model.Grade} in json format.\r\n");
