@@ -193,8 +193,31 @@ namespace SIMAPI.Controllers
                     request.Status = "Completed";
                     request.CompletedOn = DateTime.Now;
 
-                    var deserlize = JsonConvert.SerializeObject(data);
+                    var chatGPTHelper = new ChatGPTHelper();
 
+                    var chatGPResponse =  await chatGPTHelper.GenerateAIRecommendationOnResult(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
+
+                    var aiRecommendationOnResult = new AIRecommendationOnResult()
+                    {
+                        ChatGPTResponse = chatGPResponse,
+                        Guid = model.Guid,
+                    };
+
+                    request.AIRecommendation = chatGPResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                    var aIRecommendationOnResultdData = JsonConvert.DeserializeObject<List<AIRecommendationOnResult>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendationOnResult.json")));
+
+                    if (aIRecommendationOnResultdData == null)
+                    {
+                        aIRecommendationOnResultdData = new List<AIRecommendationOnResult>();
+                    }
+
+                    aIRecommendationOnResultdData.Add(aiRecommendationOnResult);
+
+                    await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendationOnResult.json"), JsonConvert.SerializeObject(aIRecommendationOnResultdData));
+                    
+                    var deserlize = JsonConvert.SerializeObject(data);
+                    
                     await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
 
                     var myChallenges = new MyChallenges();
@@ -206,6 +229,7 @@ namespace SIMAPI.Controllers
                     myChallenges.TotalCorrect = request.TotalCorrect;
                     myChallenges.TotalInCorrect = request.TotalInCorrect;
                     myChallenges.TotalNotAttempt = request.TotalNotAttempt;
+                    myChallenges.AIRecommendation = request.AIRecommendation;
 
                     return myChallenges;
                 }
@@ -231,6 +255,7 @@ namespace SIMAPI.Controllers
                 myChallenges.TotalCorrect = f.TotalCorrect;
                 myChallenges.TotalInCorrect = f.TotalInCorrect;
                 myChallenges.TotalNotAttempt = f.TotalNotAttempt;
+                myChallenges.AIRecommendation = f.AIRecommendation;
                 challanged.Add(myChallenges);
             });
 

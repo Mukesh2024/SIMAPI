@@ -10,5 +10,6 @@
         public int TotalCorrect { get; set; }
         public int TotalInCorrect { get; set; }
         public int TotalNotAttempt { get; set; }
+        public string AIRecommendation { get; set; }
     }
 }
