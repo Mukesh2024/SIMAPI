@@ -62,7 +62,7 @@ namespace SIMAPI.Controllers
         }
 
         [HttpGet(Name = "GetQuestion")]
-        public async Task<GenerateQuestionResponse> GetQuestion(Guid model)
+        public async Task<GenerateQuestionResponse> GetQuestion([FromQuery] Guid model)
         {
             var generateQuestionResponse = new GenerateQuestionResponse();
 
