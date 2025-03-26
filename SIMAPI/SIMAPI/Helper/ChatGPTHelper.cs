@@ -124,8 +124,6 @@ namespace SIMAPI.Helper
             }
         }
 
-
-
         private string GenerateAIRecommndationOnQuestionRequest(RecommendationOnQuestion model, string chatGPTModel)
         {
             StringBuilder sb = new StringBuilder();
@@ -160,85 +158,58 @@ namespace SIMAPI.Helper
             return stringData;
         }
 
-        //    public async Task<object> SendRequest()
-        //    {
-        //        var prompt = "Hello, how are you?"; // Input prompt to ask the model
+        public async Task<ChatGPTResponse> GenerateAIRecommendationOnResult(UserResponse model, string apiKey, string url, string chatGPTModel)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-        //        var response = await GetChatGptResponse(prompt);
+                string jsonRequest = GenerateAIRecommndationOnResult(model, chatGPTModel);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
-        //        Console.WriteLine("Response from gpt-4o-mini: ");
-        //        Console.WriteLine(response);
-        //        return response;
-        //    }
+                var response = await client.PostAsync(url, content);
 
-        //    private static async Task<string> GetChatGptResponse(string prompt)
-        //    {
-        //        using (var client = new HttpClient())
-        //        {
-        //            // Set up the request headers
-        //            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                var responseString = await response.Content.ReadAsStringAsync();
 
-        //            var requestBody = new
-        //            {
-        //                model = "gpt-4o-mini",  // Use "gpt-4" or another chat model like "gpt-3.5-turbo"
-        //                messages = new[]
-        // {
-        //    new
-        //    {
-        //        role = "system",
-        //        content = "You are an expert educational AI that generates structured multiple-choice quiz questions for high school and competitive exam students."
-        //    },
-        //    new
-        //    {
-        //        role = "user",
-        //        content = "Generate 1 easy-level multiple-choice question on 'Quadratic Equations' in Mathematics.\n" +
-        //                  "Each question should include:\n" +
-        //                  "1. Question statement\n" +
-        //                  "2. Four options (A to D)\n" +
-        //                  "3. Correct answer (as A/B/C/D)\n" +
-        //                  "4. Explanation (1-2 lines)\n\n" +
-        //                  "Respond in JSON format like this:\n" +
-        //                  "[\n" +
-        //                  "  {\n" +
-        //                  "    \\\"question\\\": \\\"What is the sum of the roots of the equation x² - 5x + 6 = 0?\\\",\n" +
-        //                  "    \\\"options\\\": {\n" +
-        //                  "      \\\"A\\\": \\\"5\\\",\n" +
-        //                  "      \\\"B\\\": \\\"-5\\\",\n" +
-        //                  "      \\\"C\\\": \\\"6\\\",\n" +
-        //                  "      \\\"D\\\": \\\"-6\\\"\n" +
-        //                  "    },\n" +
-        //                  "    \\\"answer\\\": \\\"A\\\",\n" +
-        //                  "    \\\"explanation\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n" +
-        //                  "  }\n" +
-        //                  "]"
-        //    }
-        //}
-        //            };
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = JsonConvert.DeserializeObject<ChatGPTResponse>(responseString);
+                    return jsonResponse;
+                }
+                else
+                {
+                    return new ChatGPTResponse();
+                }
+            }
+        }
 
+        private string GenerateAIRecommndationOnResult(UserResponse model, string chatGPTModel)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Below are the detail of student {model.Grade} in json format.\r\n");
+            sb.Append(JsonConvert.SerializeObject(model.Answers) + "\r\n");
+            sb.Append("Suppose you are teacher and give recommendation like a teacher in 3-4 line with bullats\tand you don't need to explain like \"As a teacher\"\r\n" );
+            
+            var requesBody = new ChatGPTRequest
+            {
+                model = chatGPTModel,
+                messages = new Message[]
+                {
+                     new Message
+                    {
+                        role = "system",
+                        content = "You are the Teacher."
+                    },
+                    new Message
+                    {
+                        role = "user",
+                        content = sb.ToString()
+                    },
+                }
+            };
 
-
-        //            // Convert the request body to JSON
-        //            string jsonRequest = JsonConvert.SerializeObject(requestBody);
-        //            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-        //            // Send the request
-        //            var response = await client.PostAsync(apiUrl, content);
-
-        //            // Read the response and parse it
-        //            var responseString = await response.Content.ReadAsStringAsync();
-
-        //            if (response.IsSuccessStatusCode)
-        //            {
-        //                // Parse the JSON response
-        //                dynamic jsonResponse = JsonConvert.DeserializeObject(responseString);
-        //                //return jsonResponse.choices[0].text.ToString().Trim();
-        //                return jsonResponse;
-        //            }
-        //            else
-        //            {
-        //                return $"Error: {responseString}";
-        //            }
-        //        }
-        //    }
+            var stringData = JsonConvert.SerializeObject(requesBody);
+            return stringData;
+        }
     }
 }

@@ -3,6 +3,7 @@
     public class UserResponse
     {
         public Guid Guid { get; set; }
+        public string Grade { get; set; }
         public List<UserAnswer> Answers { get; set; }
     }
 
