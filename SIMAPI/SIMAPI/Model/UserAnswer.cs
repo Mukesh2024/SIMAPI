@@ -14,6 +14,7 @@
         public bool IsCorrect { get; set; }
         public string? Hint { get; set; }
         public Options? Options { get; set; }
+        public string? CorrectAnswer { get; set; }
 
     }
 

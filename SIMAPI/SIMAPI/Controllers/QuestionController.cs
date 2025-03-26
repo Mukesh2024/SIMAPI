@@ -160,6 +160,7 @@ namespace SIMAPI.Controllers
 
                         f.Hint = question.Hint;
                         f.Options = question.Options;
+                        f.CorrectAnswer = question.Answer;
                     });
 
                     request.UserAnswer = model.Answers;
