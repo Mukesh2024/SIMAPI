@@ -61,8 +61,8 @@ namespace SIMAPI.Controllers
             return guid;
         }
 
-        [HttpPost(Name = "GetQuestion")]
-        public async Task<List<QuestionCollection>> GetQuestion(Guid model)
+        [HttpGet(Name = "GetQuestion")]
+        public async Task<GenerateQuestionResponse> GetQuestion([FromQuery] Guid model)
         {
             var generateQuestionResponse = new GenerateQuestionResponse();
 
@@ -73,7 +73,14 @@ namespace SIMAPI.Controllers
 
                 if (data.Request != null)
                 {
-                    var questionCollection = data.Request.Where(w => w.Guid == model).FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                    var requestObject = data.Request.Where(w => w.Guid == model).FirstOrDefault();
+                    var questionCollection = requestObject.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                    generateQuestionResponse.QuestionDetails = requestObject.UserRequest;
+                    generateQuestionResponse.Guid = requestObject.Guid;
+
+                    //var questionCollection = data.Request.Where(w => w.Guid == model).FirstOrDefault().ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
 
                     if (questionCollection.StartsWith("```json") && questionCollection.EndsWith("```"))
                     {
@@ -86,17 +93,20 @@ namespace SIMAPI.Controllers
                     {
                         var questionCollections = JsonConvert.DeserializeObject<List<QuestionCollection>>(questionCollection);
 
+
                         questionCollections.ForEach(f =>
                         {
                             f.Answer = null;
                         });
 
-                        return questionCollections;
+                        generateQuestionResponse.QuestionCollections = questionCollections;
+
+                        return generateQuestionResponse;
                     }
                 }
             }
 
-            return new List<QuestionCollection>();
+            return generateQuestionResponse;
         }
 
         [HttpPost(Name = "SaveUserAnswer")]

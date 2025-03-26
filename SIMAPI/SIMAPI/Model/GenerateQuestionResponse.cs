@@ -3,6 +3,8 @@
     public class GenerateQuestionResponse
     {
         public Guid Guid { get; set; }
-        public List<QuestionCollection> QuestionCollections { get; set; }
+        public List<QuestionCollection>? QuestionCollections { get; set; }
+        public GenerateQuestionRequest? QuestionDetails { get; set; }
+
     }
 }
