@@ -137,7 +137,7 @@ namespace SIMAPI.Controllers
 
                     model.Answers.ForEach(f =>
                     {
-                        var question = questionCollections.FirstOrDefault(w => w.QuestionText.Trim() == f.Question);
+                        var question = questionCollections.FirstOrDefault(w => w.QuestionText.Trim() == f.QuestionText);
 
                         if (question != null && (f.Answer != null && f.Answer != ""))
                         {
@@ -196,7 +196,7 @@ namespace SIMAPI.Controllers
 
                     var chatGPTHelper = new ChatGPTHelper();
 
-                    var chatGPResponse =  await chatGPTHelper.GenerateAIRecommendationOnResult(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
+                    var chatGPResponse = await chatGPTHelper.GenerateAIRecommendationOnResult(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
 
                     var aiRecommendationOnResult = new AIRecommendationOnResult()
                     {
@@ -216,9 +216,9 @@ namespace SIMAPI.Controllers
                     aIRecommendationOnResultdData.Add(aiRecommendationOnResult);
 
                     await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendationOnResult.json"), JsonConvert.SerializeObject(aIRecommendationOnResultdData));
-                    
+
                     var deserlize = JsonConvert.SerializeObject(data);
-                    
+
                     await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
 
                     var myChallenges = new MyChallenges();
@@ -271,60 +271,79 @@ namespace SIMAPI.Controllers
         }
 
         [HttpGet(Name = "GetQuestionWithAnswer")]
-        public async Task<List<UserAnswer>> GetQuestionWithAnswer(Guid model)
+        public async Task<QuestionWIthAnswer> GetQuestionWithAnswer(Guid model)
         {
+            var questionWIthAnswer = new QuestionWIthAnswer();
+
             if (model != Guid.Empty)
             {
                 var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
                 var userQuestionAndAnswer = data.Request.FirstOrDefault(f => f.Guid == model);
+                questionWIthAnswer.UserAnswer = userQuestionAndAnswer.UserAnswer;
+                questionWIthAnswer.Details= userQuestionAndAnswer.UserRequest;
+                questionWIthAnswer.TotalCorrect = userQuestionAndAnswer.TotalCorrect;
+                questionWIthAnswer.TotalInCorrect = userQuestionAndAnswer.TotalInCorrect;
+                questionWIthAnswer.TotalNotAttempt = userQuestionAndAnswer.TotalNotAttempt;
 
-                return userQuestionAndAnswer != null ? userQuestionAndAnswer.UserAnswer : new List<UserAnswer>();
+                return questionWIthAnswer;
             }
             else
             {
-                return new List<UserAnswer>();
+                return questionWIthAnswer;
             }
         }
 
         [HttpPost(Name = "RecommendationOnQuestion")]
         public async Task<string> RecommendationOnQuestion(RecommendationOnQuestion model)
         {
+            var recommendationText = string.Empty;
+
             if (ModelState.IsValid)
             {
                 var data = JsonConvert.DeserializeObject<List<AIRecommendation>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendation.json")));
 
                 if (data != null)
                 {
-                    var recommendation = data.FirstOrDefault(f => f.RecommendationOnQuestion.Guid == model.Guid);
+                    var recommendation = data.FirstOrDefault(f => f.RecommendationOnQuestion.Guid == model.Guid
+                    && f.RecommendationOnQuestion.QuestionDetail.QuestionText == model.QuestionDetail.QuestionText);
 
                     if (recommendation != null)
                     {
-                        return recommendation.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                        recommendationText = recommendation.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
                     }
                 }
-                else
+
+                if (recommendationText == "")
                 {
                     data = new List<AIRecommendation>();
+
+                    var chatGPTHelper = new ChatGPTHelper();
+
+                    var chatGPTResponse = await chatGPTHelper.GenerateAIRecommendation(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
+
+                    data.Add(new AIRecommendation
+                    {
+                        ChatGPTResponse = chatGPTResponse,
+                        RecommendationOnQuestion = model
+                    });
+
+                    var deserlize = JsonConvert.SerializeObject(data);
+
+                    await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendation.json"), deserlize);
+
+                    recommendationText = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+
+                    recommendationText = chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
                 }
-
-                var chatGPTHelper = new ChatGPTHelper();
-
-                var chatGPTResponse = await chatGPTHelper.GenerateAIRecommendation(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
-
-                data.Add(new AIRecommendation
-                {
-                    ChatGPTResponse = chatGPTResponse,
-                    RecommendationOnQuestion = model
-                });
-
-                var deserlize = JsonConvert.SerializeObject(data);
-
-                await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendation.json"), deserlize);
-
-                return chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault(); ;
             }
-            return "";
+
+            if (recommendationText.StartsWith("```html") && recommendationText.EndsWith("```"))
+            {
+                recommendationText = recommendationText.Substring(7);
+                recommendationText = recommendationText.Substring(0, recommendationText.LastIndexOf("```"));
+            }
+            return recommendationText;
         }
     }
 }

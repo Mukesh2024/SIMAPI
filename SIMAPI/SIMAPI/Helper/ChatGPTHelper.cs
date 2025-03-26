@@ -120,12 +120,12 @@ namespace SIMAPI.Helper
             StringBuilder sb = new StringBuilder();
             sb.Append($"Below are the detail of student mock test, We need some recommndation as per answer given by student for grade {model.Grade} student.\r\n");
             sb.Append("Question :");
-            sb.Append("According to the ideal gas law, what is the relationship among pressure (P), volume (V), and temperature (T) of an ideal gas?.\r\n");
+            sb.Append(model.QuestionDetail.QuestionText + ".\r\n");
             sb.Append("Options :");
             sb.Append(JsonConvert.SerializeObject(model.QuestionDetail.Options) + "\r\n");
             sb.Append("Answer: ");
             sb.Append(model.QuestionDetail.Answer + "\r\n");
-            sb.Append("In response only recommndation part should be but with well documentation");
+            sb.Append("In response only recommndation part should be but with well documentation as HTML format and use only div with inline css, don't use margin and use prefesstional theme with elegance color for title, subtitle and headings.");
 
             var requesBody = new ChatGPTRequest
             {

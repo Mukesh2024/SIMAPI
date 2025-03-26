@@ -9,7 +9,7 @@
 
     public class UserAnswer
     {
-        public string Question { get; set; }
+        public string QuestionText { get; set; }
         public string? Answer { get; set; }
         public bool IsCorrect { get; set; }
         public string? Hint { get; set; }
