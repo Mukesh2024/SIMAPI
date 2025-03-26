@@ -2,7 +2,6 @@
 
 namespace SIMAPI.Model
 {
-
     public class Options
     {
         public string A { get; set; }
@@ -22,8 +21,8 @@ namespace SIMAPI.Model
         [JsonProperty("answer")]
         public string? Answer { get; set; }
 
-        [JsonProperty("explanation")]
-        public string? Explanation { get; set; }
+        [JsonProperty("Hint")]
+        public string? Hint { get; set; }
     }
 
     public class Content

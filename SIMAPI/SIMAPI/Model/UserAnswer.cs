@@ -12,7 +12,8 @@
         public string? Answer { get; set; }
         public bool IsCorrect { get; set; }
         public string? Hint { get; set; }
-        public string? AIRecommentation { get; set; }
+        public Options? Options { get; set; }
+
     }
 
 }

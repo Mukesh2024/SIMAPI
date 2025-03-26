@@ -100,7 +100,7 @@ namespace SIMAPI.Controllers
         }
 
         [HttpPost(Name = "SaveUserAnswer")]
-        public async Task SaveUserAnswer(UserResponse model)
+        public async Task<MyChallenges> SaveUserAnswer(UserResponse model)
         {
             if (ModelState.IsValid)
             {
@@ -111,7 +111,6 @@ namespace SIMAPI.Controllers
                     var request = data.Request.Where(w => w.Guid == model.Guid).FirstOrDefault();
 
                     var questionAnswer = request.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
-
 
                     if (questionAnswer.StartsWith("```json") && questionAnswer.EndsWith("```"))
                     {
@@ -142,14 +141,15 @@ namespace SIMAPI.Controllers
                                 f.IsCorrect = false;
                                 totalInCorrect++;
                             }
-
-                            f.Hint = question.Explanation;
                         }
                         else
                         {
                             f.IsCorrect = false;
                             totalNotAttempt++;
                         }
+
+                        f.Hint = question.Hint;
+                        f.Options = question.Options;
                     });
 
                     request.UserAnswer = model.Answers;
@@ -186,8 +186,21 @@ namespace SIMAPI.Controllers
                     var deserlize = JsonConvert.SerializeObject(data);
 
                     await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "schema.json"), deserlize);
+
+                    var myChallenges = new MyChallenges();
+                    myChallenges.Guid = request.Guid;
+                    myChallenges.Name = request.UserRequest.ChallengeName;
+                    myChallenges.CompltedOn = request.CompletedOn;
+                    myChallenges.Grade = request.Grade;
+                    myChallenges.SubjectAndTopics = request.UserRequest.SubjectAndTopics;
+                    myChallenges.TotalCorrect = request.TotalCorrect;
+                    myChallenges.TotalInCorrect = request.TotalInCorrect;
+                    myChallenges.TotalNotAttempt = request.TotalNotAttempt;
+
+                    return myChallenges;
                 }
             }
+            return new MyChallenges();
         }
 
         [HttpGet(Name = "MyChallanges")]
@@ -221,11 +234,10 @@ namespace SIMAPI.Controllers
             return JsonConvert.DeserializeObject<List<SubjectAndTopics>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "Subject.json")));
         }
 
-        
         [HttpGet(Name = "GetQuestionWithAnswer")]
         public async Task<List<UserAnswer>> GetQuestionWithAnswer(Guid model)
         {
-            if(model != Guid.Empty)
+            if (model != Guid.Empty)
             {
                 var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
@@ -236,28 +248,47 @@ namespace SIMAPI.Controllers
             else
             {
                 return new List<UserAnswer>();
-
             }
-
         }
 
-        //[HttpGet(Name = "RecommendationOnQuestion")]
-        //public async Task<List<UserAnswer>> GetQuestionWithAnswer(Guid model)
-        //{
-        //    if (model != Guid.Empty)
-        //    {
-        //        var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
+        [HttpPost(Name = "RecommendationOnQuestion")]
+        public async Task<string> RecommendationOnQuestion(RecommendationOnQuestion model)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = JsonConvert.DeserializeObject<List<AIRecommendation>>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendation.json")));
 
-        //        var userQuestionAndAnswer = data.Request.FirstOrDefault(f => f.Guid == model);
+                if (data != null)
+                {
+                    var recommendation = data.FirstOrDefault(f => f.RecommendationOnQuestion.Guid == model.Guid);
 
-        //        return userQuestionAndAnswer != null ? userQuestionAndAnswer.UserAnswer : new List<UserAnswer>();
-        //    }
-        //    else
-        //    {
-        //        return new List<UserAnswer>();
+                    if (recommendation != null)
+                    {
+                        return recommendation.ChatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault();
+                    }
+                }
+                else
+                {
+                    data = new List<AIRecommendation>();
+                }
 
-        //    }
+                var chatGPTHelper = new ChatGPTHelper();
 
-        //}
+                var chatGPTResponse = await chatGPTHelper.GenerateAIRecommendation(model, _apiSettings.ApiKey, _apiSettings.Url, _apiSettings.Model);
+
+                data.Add(new AIRecommendation
+                {
+                    ChatGPTResponse = chatGPTResponse,
+                    RecommendationOnQuestion = model
+                });
+
+                var deserlize = JsonConvert.SerializeObject(data);
+
+                await System.IO.File.WriteAllTextAsync(Path.Combine(_jsonFilePath, "AIRecommendation.json"), deserlize);
+
+                return chatGPTResponse.Choices.Select(s => s.Message.Content).FirstOrDefault(); ;
+            }
+            return "";
+        }
     }
 }
