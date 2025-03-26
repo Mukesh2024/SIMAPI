@@ -1,6 +1,7 @@
 ﻿using Microsoft.OpenApi.Extensions;
 using Newtonsoft.Json;
 using SIMAPI.Model;
+using System.Reflection;
 using System.Text;
 
 namespace SIMAPI.Helper
@@ -13,7 +14,7 @@ namespace SIMAPI.Helper
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-                string jsonRequest = GenerateRquest(model, chatGPTModel);
+                string jsonRequest = GenerateQuestionRquest(model, chatGPTModel);
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync(url, content);
@@ -33,8 +34,7 @@ namespace SIMAPI.Helper
             }
         }
 
-
-        private string GenerateRquest(GenerateQuestionRequest model, string chatGPTModel)
+        private string GenerateQuestionRquest(GenerateQuestionRequest model, string chatGPTModel)
         {
             var systemContent = "You are an expert educational AI that generates structured multiple-choice quiz questions for high school and competitive exam students.";
             string topics = string.Empty;
@@ -91,6 +91,67 @@ namespace SIMAPI.Helper
                     {
                         role = "user",
                         content = userContent
+                    },
+                }
+            };
+
+            var stringData = JsonConvert.SerializeObject(requesBody);
+            return stringData;
+        }
+
+        public async Task<ChatGPTResponse> GenerateAIRecommendation(RecommendationOnQuestion model, string apiKey, string url, string chatGPTModel)
+        {
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                string jsonRequest =  GenerateAIRecommndationOnQuestionRequest(model, chatGPTModel);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = JsonConvert.DeserializeObject<ChatGPTResponse>(responseString);
+                    return jsonResponse;
+                }
+                else
+                {
+                    return new ChatGPTResponse();
+                }
+            }
+        }
+
+
+
+        private string GenerateAIRecommndationOnQuestionRequest(RecommendationOnQuestion model, string chatGPTModel)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Below are the detail of student mock test, We need some recommndation as per answer given by student for grade {model.Grade} student.\r\n");
+            sb.Append("Question :");
+            sb.Append("According to the ideal gas law, what is the relationship among pressure (P), volume (V), and temperature (T) of an ideal gas?.\r\n");
+            sb.Append("Options :");
+            sb.Append(JsonConvert.SerializeObject(model.QuestionDetail.Options) + "\r\n");
+            sb.Append("Answer: ");
+            sb.Append(model.QuestionDetail.Answer + "\r\n");
+            sb.Append("In response only recommndation part should be but with well documentation");
+
+            var requesBody = new ChatGPTRequest
+            {
+                model = chatGPTModel,
+                messages = new Message[]
+                {
+                     new Message
+                    {
+                        role = "system",
+                        content = "You are the analyst."
+                    },
+                    new Message
+                    {
+                        role = "user",
+                        content = sb.ToString()
                     },
                 }
             };
