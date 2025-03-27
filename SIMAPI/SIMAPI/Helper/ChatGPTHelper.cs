@@ -125,8 +125,9 @@ namespace SIMAPI.Helper
             sb.Append("Options :");
             sb.Append(JsonConvert.SerializeObject(model.QuestionDetail.Options) + "\r\n");
             sb.Append("Answer: ");
-            sb.Append(model.QuestionDetail.Answer + "\r\n");
-            sb.Append("Pleaese compare the answer with given option and then tell it is writh or wrong.");
+            sb.Append(model.QuestionDetail.Answer != ""? model.QuestionDetail.Answer:"Not attempt"  + "\r\n");
+            sb.Append("The question options Pleaese compare the answer with given option and then tell it is writh or wrong.");
+            sb.Append("If answer value 'Not attempt' then don't tell 'Your answer is right or wrong' just give the explaination.");
             sb.Append("If the answer is incorrect, provide guidance on what the student can do or avoid in the future.");
             sb.Append("If the answer is wrong, offer motivational feedback like, You're learning and improving—keep practicing! You’ll get it right next time. 😊👏");
             sb.Append("If the answer is correct, suggest ways the student can improve further.");

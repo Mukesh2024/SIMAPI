@@ -4,6 +4,6 @@
     {
         public Guid Guid { get; set; }
         public string Grade { get; set; }
-        public QuestionCollection QuestionDetail { get; set; }
+        public UserAnswer QuestionDetail { get; set; }
     }
 }
