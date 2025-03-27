@@ -287,12 +287,14 @@ namespace SIMAPI.Controllers
                 var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
                 var userQuestionAndAnswer = data.Request.FirstOrDefault(f => f.Guid == model);
-                questionWIthAnswer.UserAnswer = userQuestionAndAnswer.UserAnswer;
-                questionWIthAnswer.Details= userQuestionAndAnswer.UserRequest;
-                questionWIthAnswer.TotalCorrect = userQuestionAndAnswer.TotalCorrect;
-                questionWIthAnswer.TotalInCorrect = userQuestionAndAnswer.TotalInCorrect;
-                questionWIthAnswer.TotalNotAttempt = userQuestionAndAnswer.TotalNotAttempt;
-
+                if (userQuestionAndAnswer != null)
+                {
+                    questionWIthAnswer.UserAnswer = userQuestionAndAnswer.UserAnswer;
+                    questionWIthAnswer.Details = userQuestionAndAnswer.UserRequest;
+                    questionWIthAnswer.TotalCorrect = userQuestionAndAnswer.TotalCorrect;
+                    questionWIthAnswer.TotalInCorrect = userQuestionAndAnswer.TotalInCorrect;
+                    questionWIthAnswer.TotalNotAttempt = userQuestionAndAnswer.TotalNotAttempt;
+                }
                 return questionWIthAnswer;
             }
             else
