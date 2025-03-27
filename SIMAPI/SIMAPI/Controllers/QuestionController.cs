@@ -37,6 +37,11 @@ namespace SIMAPI.Controllers
 
                 var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
+                if (data == null) 
+                {
+                        data = new Schema();
+                }
+
                 if (data.Request == null)
                 {
                     data.Request = new List<Request>();
@@ -244,21 +249,23 @@ namespace SIMAPI.Controllers
             var data = JsonConvert.DeserializeObject<Schema>(await System.IO.File.ReadAllTextAsync(Path.Combine(_jsonFilePath, "schema.json")));
 
             var challanged = new List<MyChallenges>();
-
-            data.Request.ForEach(f =>
+            if (data != null)
             {
-                var myChallenges = new MyChallenges();
-                myChallenges.Guid = f.Guid;
-                myChallenges.Name = f.UserRequest.ChallengeName;
-                myChallenges.CompltedOn = f.CompletedOn;
-                myChallenges.Grade = f.Grade;
-                myChallenges.SubjectAndTopics = f.UserRequest.SubjectAndTopics;
-                myChallenges.TotalCorrect = f.TotalCorrect;
-                myChallenges.TotalInCorrect = f.TotalInCorrect;
-                myChallenges.TotalNotAttempt = f.TotalNotAttempt;
-                myChallenges.AIRecommendation = f.AIRecommendation;
-                challanged.Add(myChallenges);
-            });
+                data.Request.ForEach(f =>
+                {
+                    var myChallenges = new MyChallenges();
+                    myChallenges.Guid = f.Guid;
+                    myChallenges.Name = f.UserRequest.ChallengeName;
+                    myChallenges.CompltedOn = f.CompletedOn;
+                    myChallenges.Grade = f.Grade;
+                    myChallenges.SubjectAndTopics = f.UserRequest.SubjectAndTopics;
+                    myChallenges.TotalCorrect = f.TotalCorrect;
+                    myChallenges.TotalInCorrect = f.TotalInCorrect;
+                    myChallenges.TotalNotAttempt = f.TotalNotAttempt;
+                    myChallenges.AIRecommendation = f.AIRecommendation;
+                    challanged.Add(myChallenges);
+                });
+            }
 
             return challanged;
 
