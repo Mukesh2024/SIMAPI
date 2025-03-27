@@ -89,7 +89,7 @@ namespace SIMAPI.Helper
                       "      \\\"D\\\": \\\"-6\\\"\n" +
                       "    },\n" +
                       "    \\\"answer\\\": \\\"A\\\",\n" +
-                      (model.AllowAIGuidence? "    \\\"hint\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n": string.Empty) +
+                      (model.AllowAIGuidence ? "    \\\"hint\\\": \\\"Sum of roots = -b/a = -(-5)/1 = 5\\\"\n" : string.Empty) +
                       "  }\n" +
                       "]";
 
@@ -114,18 +114,34 @@ namespace SIMAPI.Helper
             var stringData = JsonConvert.SerializeObject(requesBody);
             return stringData;
         }
-        
+
         private string GenerateAIRecommndationOnQuestionRequest(RecommendationOnQuestion model, string chatGPTModel)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append($"Below are the detail of student mock test, We need some recommndation as per answer given by student for grade {model.Grade} student.\r\n");
+            //sb.Append($"Below are the detail of student mock test, We need some recommndation as per answer given by student for grade {model.Grade} student.\r\n");
+            sb.Append($"Below are the detail of student mock test results, Guide student how we can improve on result as per answer given by student for grade {model.Grade} student.\r\n");
             sb.Append("Question :");
             sb.Append(model.QuestionDetail.QuestionText + ".\r\n");
             sb.Append("Options :");
             sb.Append(JsonConvert.SerializeObject(model.QuestionDetail.Options) + "\r\n");
             sb.Append("Answer: ");
             sb.Append(model.QuestionDetail.Answer + "\r\n");
-            sb.Append("In response only recommndation part should be but with well documentation as HTML format and use only div with inline css, don't use margin and use prefesstional theme with elegance color for title, subtitle and headings.");
+            sb.Append("Pleaese compare the answer with given option and then tell it is writh or wrong.");
+            sb.Append("If the answer is incorrect, provide guidance on what the student can do or avoid in the future.");
+            sb.Append("If the answer is wrong, offer motivational feedback like, You're learning and improving—keep practicing! You’ll get it right next time. 😊👏");
+            sb.Append("If the answer is correct, suggest ways the student can improve further.");
+            sb.Append("If the answer is correct, offer positive reinforcement such as, You're doing amazing—keep up the hard work! 🎉👏");
+            sb.Append("Keep the responses clear and simple so that they are easily displayed on an HTML page with appropriate emotions.");
+            sb.Append("Tell student that answer is wrong or right");
+            sb.Append("Explain the question and how it can be solve to student");
+            sb.Append("How student can improve himself");
+            sb.Append("Give response in html and don't use html,head and body tag, use only inline css");
+            sb.Append("Keep it clean, professional, and engaging.");
+            sb.Append("Pleaese compare the answer with option.");
+
+
+
+            //sb.Append("In response only recommndation part should be but with well documentation as HTML format and use only div with inline css, don't use margin and use prefesstional theme with elegance color for title, subtitle and headings.");
 
             var requesBody = new ChatGPTRequest
             {
@@ -154,8 +170,8 @@ namespace SIMAPI.Helper
             StringBuilder sb = new StringBuilder();
             sb.Append($"Below are the detail of student {model.Grade} in json format.\r\n");
             sb.Append(JsonConvert.SerializeObject(model.Answers) + "\r\n");
-            sb.Append("Suppose you are teacher and give recommendation like a teacher in 3-4 line with bullats\tand you don't need to explain like \"As a teacher\"\r\n" );
-            
+            sb.Append("Suppose you are teacher and give recommendation like a teacher in 3-4 line with bullats\tand you don't need to explain like \"As a teacher\"\r\n");
+
             var requesBody = new ChatGPTRequest
             {
                 model = chatGPTModel,
